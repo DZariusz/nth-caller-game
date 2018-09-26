@@ -1,5 +1,6 @@
 "use strict"
 
+const andromedaName = 'andromeda_004';
 const express = require('express');
 const bodyParser = require('body-parser');
 const grpc = require('grpc')
@@ -18,7 +19,7 @@ app.use(express.static(__dirname))
 
 // Start the express app
 app.listen(uiPort, () => {
-  console.log("Nth Caller Dapp server started.")
+  console.log("Andromeda Dapp server started.")
   console.log(`Connected to RNode at ${host}:${port}.`)
   console.log(`started on ${uiPort}`)
 })
@@ -28,7 +29,7 @@ app.listen(uiPort, () => {
 
 // Handle users registering new games
 app.post('/register', (req, res) => {
-  let code = `@"nthCallerFactory"!("${req.body.id}", ${req.body.n})`
+  let code = `@"${andromedaName}"!("${req.body.root}")`
   let deployData = {term: code,
                     timestamp: new Date().valueOf(),
                    }
@@ -50,7 +51,42 @@ app.post('/call', (req, res) => {
   // TODO this should be unforgeable. Can I make one from JS?
   let ack = Math.random().toString(36).substring(7)
 
-  let code = `@"${req.body.id}"!("${req.body.name}", "${ack}")`
+  let code = `@"${req.body.root}"!("${req.body.balance}", "${ack}")`
+  let deployData = {term: code,
+                    timestamp: new Date().valueOf(),
+                   }
+
+  myNode.doDeploy(deployData).then(_ => {
+    // Force RNode to make a block immediately
+    return myNode.createBlock()
+  }).then(_ => {
+    // Get the data from RNode
+    return myNode.listenForDataAtName(ack)
+  }).then((blockResults) => {
+    // If no data is on RChain
+    if(blockResults.length === 0){
+      res.end(JSON.stringify({success: false}))
+      return
+    }
+    // Grab back the last message sent
+    var lastBlock = blockResults.slice(-1).pop()
+    var lastDatum = lastBlock.postBlockData.slice(-1).pop()
+    res.end(JSON.stringify(
+      // Rholang process should be a string literal
+      {success: true,
+       message: RHOCore.toRholang(lastDatum),
+     }))
+  }).catch(oops => { console.log(oops); })
+})
+
+
+// Handle users calling in to win
+app.post('/counter', (req, res) => {
+
+  // TODO this should be unforgeable. Can I make one from JS?
+  let ack = Math.random().toString(36).substring(7)
+
+  let code = `@"${req.body.root}"!("${ack}")`
   let deployData = {term: code,
                     timestamp: new Date().valueOf(),
                    }

@@ -20,7 +20,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JoshOrndorff/nth-caller-game"
+    "url": "https://github.com/DZariusz/nth-caller-game"
   },
   "dependencies": {
     "body-parser": "^1.18.3",

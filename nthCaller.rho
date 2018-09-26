@@ -1,26 +1,43 @@
-contract @"nthCallerFactory"(gameId, @n) = {
+contract @"andromeda_004"(merkleRoot) = {
   new countCh in {
 
     // Count state channel starts at one
-    countCh!(1)|
+    countCh!(0)|
 
     // Contestants call with their name and a channel
     // to receive their result
-    contract gameId(@name, result) = {
+    contract merkleRoot(@balance, result) = {
 
-      for(@oldCount <- countCh) {
-
-        if (n == oldCount) {
-         result!("Congrats " ++ name ++ ", You win!")
-        }
-        else {
-          result!("Sorry, " ++ name ++ ", try again.")|
-          countCh!(oldCount + 1)
+      for(@oldCount <- countCh) {        
+        // result!("Vote for " ++ merkleRoot ++ ", balance addes: " ++ balance) |
+        result!("Vote, balance added: " ++ balance) |
+        countCh!(oldCount + 1)
+      } 
+      /* 
+      |
+      new getCount in {
+        contract getCount(ack) = {
+          for(@value <- countCh) {
+            countCh!(value) | ack!(value)
+          }
         }
       }
+      */
     }
   }
 }
+
+/*
+contract getCount(result) = {
+
+      // idk if <- is right one
+      for(@votes <- countCh) {        
+         result!("Results for " ++ merkleRoot ++ ": " ++ votes) |    
+          // countCh!(oldCount + balance)
+        }
+      }
+    } 
+*/
 
 /*
 Nice feature. When the nth caller is reached, nothing is

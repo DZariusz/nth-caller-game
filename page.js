@@ -3,15 +3,16 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // Grab DOM items
-  let newGameId = document.getElementById('new-game-id')
-  let n = document.getElementById('n')
-  let callGameId = document.getElementById('call-game-id')
-  let name = document.getElementById('name')
+  let newMerkleRoot = document.getElementById('new-root')
+  let merkleRoot = document.getElementById('merkleRoot')
+  let balance = document.getElementById('balance')
   let resultP = document.getElementById('status')
+  let rootCounter = document.getElementById('rootCounter')
 
   // Event Listeners
   document.getElementById('register').addEventListener('click', register)
   document.getElementById('call').addEventListener('click', call)
+  document.getElementById('counter').addEventListener('click', counter)
 
   /**
    * Grabs gameId and winning number of calls from DOM and registers
@@ -19,15 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function register(){
     // Validate form data
-    if (newGameId.value === "" || n.value === ""){
-      console.log("GameId and Winning Caller are required. No Game Registered.")
+    if (newMerkleRoot.value === ""){
+      alert("GameId and Winning Caller are required. No Game Registered.")
       return
     }
 
     // Setup the request
     let body = {
-      id: newGameId.value,
-      n: parseInt(n.value, 10),
+      root: newMerkleRoot.value
     }
 
     // Actually send it
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 
     // Clear the DOM to prevent double posts
-    newGameId.value = ""
+    newMerkleRoot.value = ""
   }
 
   /**
@@ -46,15 +46,15 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function call(){
     // Validate form data
-    if (callGameId.value === "") {
-      console.log("GameId is required. No Call Made.")
+    if (merkleRoot.value === "") {
+      alert("GameId is required. No Call Made.")
       return
     }
 
     // Setup the request
     let body = {
-      id: callGameId.value,
-      name: name.value,
+      root: merkleRoot.value,
+      balance: balance.value,
     }
 
     // Actually send it
@@ -63,7 +63,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // See whether we found any data
       if (!data.success) {
-        console.log("No such game found in RChain")
+        alert("Voting error")
+      }
+      else {
+        resultP.innerHTML = data.message
+      }
+    })
+  }
+
+  function counter(){
+    // Validate form data
+    if (rootCounter.value === "") {
+      alert("rootCounter is required. No Call Made.")
+      return
+    }
+
+    // Setup the request
+    let body = {
+      root: rootCounter.value
+    }
+
+    // Actually send it
+    makePost('/counter', body)
+    .then(data => {
+
+      // See whether we found any data
+      if (!data.success) {
+        console.log(data);
+        alert("Counter error")
       }
       else {
         resultP.innerHTML = data.message
